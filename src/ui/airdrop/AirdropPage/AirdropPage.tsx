@@ -41,6 +41,7 @@ enum AirdropStep {
   DELEGATE_INFO,
   CHOOSE_DELEGATE,
   DELEGATE_PREVIEW,
+  CLAIM_AND_DELEGATE_PREVIEW,
 }
 
 export default function AirdropPage(): ReactElement {
