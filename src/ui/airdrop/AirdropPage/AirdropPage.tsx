@@ -34,6 +34,15 @@ enum AirdropStep {
   CLAIM_AND_DELEGATE_PREVIEW,
 }
 
+enum AirdropStep {
+  START_CLAIMING,
+  AIRDROP_PREVIEW,
+  ALREADY_CLAIMED,
+  DELEGATE_INFO,
+  CHOOSE_DELEGATE,
+  DELEGATE_PREVIEW,
+}
+
 export default function AirdropPage(): ReactElement {
   const { account, active, library } = useWeb3React();
   const signer = useSigner(account, library);
