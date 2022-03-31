@@ -25,7 +25,7 @@ function MyApp({ Component, pageProps }: AppProps): ReactElement {
   return (
     <div className="h-screen bg-hackerSky">
       <ElementIcon className="m-auto mt-48" size={IconSize.MASSIVE} />
-      <div className="m-auto mt-4 font-sans text-2xl font-semibold text-center text-slate-900">
+      <div className="m-auto mt-4 text-center font-sans text-2xl font-semibold text-slate-900">
         Coming soon...
       </div>
     </div>
