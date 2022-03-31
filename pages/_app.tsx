@@ -14,19 +14,21 @@ import { getEthereumProviderLibrary } from "src/elf/getEthereumProviderLibrary";
 import { queryClient } from "src/elf/queryClient";
 import { addressesJson } from "src/elf-council-addresses";
 import { Notifications } from "src/ui/notifications/Notifications";
+import { ElementLogo } from "src/ui/base/svg/ElementLogo/ElementLogo";
+import ElementIconCircleStories from "src/ui/base/ElementIconCircle/ElementIconCircle.stories";
+import ElementIcon, { IconSize } from "src/ui/base/svg/ElementIcon/ElementIcon";
 
 // We want to log out addresses for sanity/debugging purposes
 // eslint-disable-next-line no-console
 console.log(addressesJson);
 function MyApp({ Component, pageProps }: AppProps): ReactElement {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Web3ReactProvider getLibrary={getEthereumProviderLibrary}>
-        <Notifications />
-        <Component {...pageProps} />
-      </Web3ReactProvider>
-      <ReactQueryDevtools />
-    </QueryClientProvider>
+    <div className="h-screen bg-hackerSky">
+      <ElementIcon className="m-auto mt-48" size={IconSize.MASSIVE} />
+      <div className="m-auto mt-4 font-sans text-2xl font-semibold text-center text-slate-900">
+        Coming soon...
+      </div>
+    </div>
   );
 }
 

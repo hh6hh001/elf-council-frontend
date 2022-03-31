@@ -23,7 +23,7 @@ function Header(): ReactElement {
   const amountDeposited = useDeposited(account) || "0";
 
   return (
-    <div className="flex w-full justify-between">
+    <div className="flex w-full justify-between bg-slate-100">
       <div className="flex space-x-3"></div>
       <div className="flex items-center space-x-4 text-gray-400">
         {account ? (

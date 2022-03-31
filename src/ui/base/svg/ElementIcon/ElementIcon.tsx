@@ -8,6 +8,7 @@ export enum IconSize {
   SMALL = "small",
   MEDIUM = "medium",
   LARGE = "large",
+  MASSIVE = "MASSIVE",
 }
 
 export enum IconVariant {
@@ -42,9 +43,11 @@ const IconHeight = {
   [IconSize.SMALL]: "12",
   [IconSize.MEDIUM]: "24",
   [IconSize.LARGE]: "48",
+  [IconSize.MASSIVE]: "128",
 };
 const IconWidth = {
   [IconSize.SMALL]: "12",
   [IconSize.MEDIUM]: "24",
   [IconSize.LARGE]: "48",
+  [IconSize.MASSIVE]: "128",
 };

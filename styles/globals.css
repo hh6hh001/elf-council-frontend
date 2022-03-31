@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --app-background-light: #faf9f9;
+  --app-background-light: #f1f5fe;
 }
 
 body {
