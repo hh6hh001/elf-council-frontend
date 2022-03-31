@@ -47,13 +47,15 @@ export function ElementIconCircle({
   return iconElement;
 }
 
-const IconHeight: Record<IconSize, string> = {
-  [IconSize.SMALL]: "14",
+const IconHeight = {
+  [IconSize.SMALL]: "12",
   [IconSize.MEDIUM]: "24",
   [IconSize.LARGE]: "48",
+  [IconSize.MASSIVE]: "128",
 };
-const IconWidth: Record<IconSize, string> = {
-  [IconSize.SMALL]: "14",
+const IconWidth = {
+  [IconSize.SMALL]: "12",
   [IconSize.MEDIUM]: "24",
   [IconSize.LARGE]: "48",
+  [IconSize.MASSIVE]: "128",
 };
