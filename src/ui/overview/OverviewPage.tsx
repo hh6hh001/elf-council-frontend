@@ -15,6 +15,7 @@ import H1 from "src/ui/base/H1/H1";
 import ExternalLink from "src/ui/base/ExternalLink/ExternalLink";
 import { PortfolioCard } from "src/ui/overview/PortfolioCard";
 import { SummaryCards } from "src/ui/overview/SummaryCards";
+import ElfiverseBanner from "src/ui/overview/ElfiverseBanner";
 
 interface OverviewPageProps {
   proposalsJson: ProposalsJson;
@@ -44,6 +45,10 @@ export function OverviewPage({
         </div>
         <div className="flex w-full flex-col gap-6">
           <FAQ />
+          <ElfiverseBanner
+            account={account}
+            recentDelegators={recentDelegators}
+          />
         </div>
       </div>
     </div>

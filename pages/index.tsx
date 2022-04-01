@@ -33,6 +33,6 @@ export async function getStaticProps(): Promise<{
 
   return {
     props: { proposalsJson, recentDelegators },
-    revalidate: 60, // seconds,
+    revalidate: 5, // seconds,
   };
 }
