@@ -13,6 +13,7 @@ export default function Home({
   proposalsJson,
   recentDelegators,
 }: HomeProps): ReactElement {
+  console.log(recentDelegators);
   return (
     <PageView childrenContainerClassName="flex justify-center">
       <OverviewPage

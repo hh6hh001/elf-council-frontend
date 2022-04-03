@@ -1,9 +1,11 @@
+import { BigNumber } from "ethers";
 import {
   lockingVaultContract as lockingVault,
   vestingContract as vestingVault,
 } from "src/elf/contracts";
 
 const STARTING_BLOCK_NUMBER = 14496292;
+const MAX_WHITELIST = 2000;
 
 // Fetches the number of unique delegators from both locking and vesting vaults
 // This function should be used within NextJs getStaticProps with a TTL to cache this result
@@ -21,41 +23,23 @@ export async function getRecentDelegators(): Promise<string[]> {
     STARTING_BLOCK_NUMBER,
   );
 
-  const delegators: string[] = [];
+  const delegators: Set<string> = new Set();
 
-  lockingEvents.forEach((event) => {
-    const value = event.args[2];
-    const from = event.args[1];
-    if (value.gt(0)) {
-      delegators.push(from);
+  const sortedEvents = lockingEvents
+    .concat(vestingEvents)
+    .sort((eventA, eventB) => eventB.blockNumber - eventA.blockNumber);
+
+  sortedEvents.forEach((event) => {
+    // VoteChange(to, from, amount)
+    if (event.args) {
+      const from: string = event.args[1];
+      const value: BigNumber = event.args[2];
+
+      if (value.gt(0) && delegators.size < MAX_WHITELIST) {
+        delegators.add(from);
+      }
     }
   });
 
-  //const ss = new Set<string>([]);
-  vestingEvents.forEach((event) => {
-    const value = event.args[2];
-    const from = event.args[1];
-
-    //ss.add(from);
-
-    delegators.push(from);
-    if (value.gt(0)) {
-      delegators.push(from);
-    }
-  });
-
-  //console.log("vestingEvents", ss.size, ss, vestingVault.address);
-
-  // console.log(
-  //   delegators,
-  //   console.log(
-  //     delegators.includes("0xfb0e31B422E606Ca996E4415243EBF15c2E5535E"),
-  //   ),
-  // );
-
-  const y = new Set<string>(delegators);
-  const uu = Array.from(y);
-  console.log("y", y.size, y.has("0xfb0e31B422E606Ca996E4415243EBF15c2E5535E"));
-
-  return Array.from(y);
+  return Array.from(delegators);
 }
