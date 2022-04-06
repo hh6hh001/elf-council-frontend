@@ -6,6 +6,15 @@ import {
   toHex,
 } from "zkp-merkle-airdrop-lib";
 import { useQuery } from "react-query";
+import {
+  discordTier1PrivateAirdropContract,
+  // discordTier2PrivateAirdropContract,
+  // discordTier3PrivateAirdropContract,
+  githubTier1PrivateAirdropContract,
+  githubTier2PrivateAirdropContract,
+  githubTier3PrivateAirdropContract,
+} from "src/elf/contracts";
+import { PrivateAirdrop } from "@elementfi/elf-council-typechain";
 
 // TODO: Move cdn base url to environment variable
 const cdnUrl = `https://elementfi.s3.us-east-2.amazonaws.com/rewards/${
@@ -55,7 +64,12 @@ export interface UseZKProofProps {
   account?: string;
 }
 
-interface UseZKProof extends ProofState {
+export interface MerkleTreeInfo {
+  merkleTree: MerkleTree;
+  contract: PrivateAirdrop;
+}
+
+interface UseZKProof extends ProofState, Partial<MerkleTreeInfo> {
   generate: () => Promise<string> | undefined;
   isEligible: boolean;
   isReady: boolean;
@@ -71,14 +85,65 @@ export default function useZKProof({
   });
 
   // fetch required files
-  const { data: merkleTree } = useQuery({
-    queryKey: "zk-merkle-tree",
+  // TODO: fetch all trees
+  const { data: githubMerkleTreeT1 } = useQuery({
+    queryKey: "github-merkle-tree-1",
     queryFn: async () =>
-      fetch(`${cdnUrl}/merkle_tree_storage_string.txt`)
+      fetch(`${cdnUrl}/merkle/0x7198A8379fE0A0663A1E7020F6100F39b53bbB9e.txt`)
         .then((res) => res.text())
         .then((mtss) => MerkleTree.createFromStorageString(mtss)),
     staleTime: Infinity,
   });
+  const { data: githubMerkleTreeT2 } = useQuery({
+    queryKey: "github-merkle-tree-2",
+    queryFn: async () =>
+      fetch(`${cdnUrl}/merkle/0xd21A03818ffe26dD92AEeD030E8a4b920c25C1cd.txt`)
+        .then((res) => res.text())
+        .then((mtss) => MerkleTree.createFromStorageString(mtss)),
+    staleTime: Infinity,
+  });
+  const { data: githubMerkleTreeT3 } = useQuery({
+    queryKey: "github-merkle-tree-3",
+    queryFn: async () =>
+      fetch(`${cdnUrl}/merkle/0xd98BD503c766F2ee0Bf05A4f34dA50af5B71D051.txt`)
+        .then((res) => res.text())
+        .then((mtss) => MerkleTree.createFromStorageString(mtss)),
+    staleTime: Infinity,
+  });
+  const { data: discordMerkleTreeT1 } = useQuery({
+    queryKey: "discord-merkle-tree-1",
+    queryFn: async () =>
+      fetch(`${cdnUrl}/merkle/0x8c7a3457742bC7ae91Bec25ea9Ab5dCbEF412292.txt`)
+        .then((res) => res.text())
+        .then((mtss) => MerkleTree.createFromStorageString(mtss)),
+    staleTime: Infinity,
+  });
+  // const { data: discordMerkleTreeT2 } = useQuery({
+  //   queryKey: "discord-merkle-tree-1",
+  //   queryFn: async () =>
+  //     fetch(`${cdnUrl}/merkle/0x6E023DAF6D9B89491A86A4554651fBaF3b8402FE.txt`)
+  //       .then((res) => res.text())
+  //       .then((mtss) => MerkleTree.createFromStorageString(mtss)),
+  //   staleTime: Infinity,
+  // });
+  // const { data: discordMerkleTreeT3 } = useQuery({
+  //   queryKey: "discord-merkle-tree-1",
+  //   queryFn: async () =>
+  //     fetch(`${cdnUrl}/merkle/0x6923F46Bfbf87E01428b8a70B1B6737a982ABcdA.txt`)
+  //       .then((res) => res.text())
+  //       .then((mtss) => MerkleTree.createFromStorageString(mtss)),
+  //   staleTime: Infinity,
+  // });
+  const treesReady = !!(
+    (
+      githubMerkleTreeT1 &&
+      githubMerkleTreeT2 &&
+      githubMerkleTreeT3 &&
+      discordMerkleTreeT1
+    ) //&&
+    // discordMerkleTreeT2 &&
+    // discordMerkleTreeT3
+  );
   const { data: wasmBuffer } = useQuery({
     queryKey: "zk-wasm-buffer",
     queryFn: () =>
@@ -97,31 +162,79 @@ export default function useZKProof({
   });
 
   // set isEligible when the key, secret, and/or merkleTree change
-  const isEligible = useMemo(() => {
-    if (key && secret && merkleTree) {
+  const merkleTreeInfo = useMemo<MerkleTreeInfo | undefined>(() => {
+    if (key && secret && treesReady) {
       let commitment: string;
 
       // OK to catch, as it throws in the case of being not eligible
       try {
         commitment = toHex(pedersenHashConcat(BigInt(key), BigInt(secret)));
       } catch (e) {
-        return false;
+        return undefined;
       }
 
-      return merkleTree.leafExists(BigInt(commitment));
+      const merkleTrees = [
+        {
+          merkleTree: githubMerkleTreeT1,
+          contract: githubTier1PrivateAirdropContract,
+        },
+        {
+          merkleTree: githubMerkleTreeT2,
+          contract: githubTier2PrivateAirdropContract,
+        },
+        {
+          merkleTree: githubMerkleTreeT3,
+          contract: githubTier3PrivateAirdropContract,
+        },
+        {
+          merkleTree: discordMerkleTreeT1,
+          contract: discordTier1PrivateAirdropContract,
+        },
+        // {
+        //   merkleTree: discordMerkleTreeT2,
+        //   contract: discordTier2PrivateAirdropContract,
+        // },
+        // {
+        //   merkleTree: discordMerkleTreeT3,
+        //   contract: discordTier3PrivateAirdropContract,
+        // },
+      ];
+      for (const treeInfo of merkleTrees) {
+        const leafExists = treeInfo.merkleTree.leafExists(BigInt(commitment));
+        if (leafExists) {
+          return treeInfo;
+        }
+      }
     }
-    return false;
-  }, [key, secret, merkleTree]);
+  }, [
+    key,
+    secret,
+    treesReady,
+    githubMerkleTreeT1,
+    githubMerkleTreeT2,
+    githubMerkleTreeT3,
+    discordMerkleTreeT1,
+    // discordMerkleTreeT2,
+    // discordMerkleTreeT3,
+  ]);
 
-  const isReady = !!(merkleTree && wasmBuffer && zkeyBuffer);
+  const isReady = !!(treesReady && wasmBuffer && zkeyBuffer);
 
   const generate = useCallback(() => {
-    if (isReady && isEligible && key && secret && account) {
+    if (isReady && merkleTreeInfo && key && secret && account) {
       dispatch({ type: "startGenerating" });
       return generateProofCallData(
-        merkleTree,
-        BigInt(key),
-        BigInt(secret),
+        merkleTreeInfo?.merkleTree,
+        // the last 2 characters represent the MSB which are removed by the
+        // pedersenHash function when creating the commitment (public ID). To
+        // generate a valid proof, they need to be removed here too.
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+        BigInt(key.slice(0, 64)),
+        // the last 2 characters represent the MSB which are removed by the
+        // pedersenHash function when creating the commitment (public ID). To
+        // generate a valid proof, they need to be removed here too.
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+        BigInt(secret.slice(0, 64)),
         account,
         wasmBuffer,
         zkeyBuffer,
@@ -135,21 +248,13 @@ export default function useZKProof({
           return err?.message || "";
         });
     }
-  }, [
-    key,
-    secret,
-    account,
-    merkleTree,
-    wasmBuffer,
-    zkeyBuffer,
-    isEligible,
-    isReady,
-  ]);
+  }, [key, secret, account, merkleTreeInfo, wasmBuffer, zkeyBuffer, isReady]);
 
   return {
     generate,
     isReady,
-    isEligible,
+    isEligible: !!merkleTreeInfo,
     ...state,
+    ...merkleTreeInfo,
   };
 }
